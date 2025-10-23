@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Clustering Info - Smart Store{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-project-diagram text-info"></i>
+                Clustering Information
+            </h1>
+
+            {% if status == 'success' %}
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ stats.total_users }}</h5>
+                            <p class="card-text">Total Users</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ stats.total_products }}</h5>
+                            <p class="card-text">Total Products</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ stats.user_cluster|default:"N/A" }}</h5>
+                            <p class="card-text">Your Cluster</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ stats.cluster_size }}</h5>
+                            <p class="card-text">Cluster Size</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            {% if cluster_info %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-users"></i> Your Cluster Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Cluster ID:</strong> {{ cluster_info.cluster_id }}</p>
+                    <p><strong>Cluster Size:</strong> {{ cluster_info.cluster_size }} users</p>
+                    <p><strong>Cluster Users:</strong> {{ cluster_info.cluster_users|join:", " }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Category Statistics</h5>
+                </div>
+                <div class="card-body">
+                    {% if category_stats %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Number of Users</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in category_stats %}
+                            <tr>
+                                <td>{{ cat.name }}</td>
+                                <td>{{ cat.num_users }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No category stats available.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i class="fas fa-tags"></i> Same Category Recommendations ({{ stats.same_category_recs }})</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if recommendations.same_category %}
+                            <ul class="list-group list-group-flush">
+                                {% for product_id, product_name, category_name in recommendations.same_category %}
+                                <li class="list-group-item">
+                                    <strong>{{ product_name }}</strong><br>
+                                    <small class="text-muted">{{ category_name }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">No same category recommendations found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i class="fas fa-link"></i> Related Category Recommendations ({{ stats.related_category_recs }})</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if recommendations.related_category %}
+                            <ul class="list-group list-group-flush">
+                                {% for product_id, product_name, category_name in recommendations.related_category %}
+                                <li class="list-group-item">
+                                    <strong>{{ product_name }}</strong><br>
+                                    <small class="text-muted">{{ category_name }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">No related category recommendations found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif status == 'failed' %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load clustering info.
+            </div>
+            {% else %}
+            <div class="alert alert-danger">
+                <i class="fas fa-times-circle"></i> An error occurred.
+            </div>
+            {% endif %}
+
+            
+            <div class="mt-4">
+                <a href="{% url 'store:clustering_info' %}" class="btn btn-primary">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </a>
+                <a href="{% url 'store:recommendations' %}" class="btn btn-success">
+                    <i class="fas fa-lightbulb"></i> View Recommendations
+                </a>
+                <a href="{% url 'store:home' %}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

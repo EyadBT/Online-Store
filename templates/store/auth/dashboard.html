@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Smart Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user"></i> Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-user-circle fa-4x text-primary"></i>
+                </div>
+                <h6>{{ user.get_full_name|default:user.username }}</h6>
+                <p class="text-muted">{{ user.email }}</p>
+                {% if user.phone %}
+                    <p><i class="fas fa-phone"></i> {{ user.phone }}</p>
+                {% endif %}
+                {% if user.city %}
+                    <p><i class="fas fa-map-marker-alt"></i> {{ user.city }}</p>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'store:profile' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-wallet"></i> Wallet</h5>
+            </div>
+            <div class="card-body text-center">
+                <h3 class="text-primary">${{ wallet.balance|floatformat:2 }}</h3>
+                <p class="text-muted">Available Balance</p>
+                <div class="mt-3">
+                    <a href="{% url 'store:wallet' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-wallet"></i> Manage Wallet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-store"></i> Seller Status</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if user.profile.is_seller %}
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h6 class="text-success">Active Seller</h6>
+                    <p class="text-muted">You can create shops and sell products</p>
+                    <div class="mt-3">
+                        <a href="{% url 'store:create_shop' %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Create Shop
+                        </a>
+                    </div>
+                {% else %}
+                    <i class="fas fa-times-circle fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">Not a Seller</h6>
+                    <p class="text-muted">Become a seller to start selling products</p>
+                    <div class="mt-3">
+                        <a href="{% url 'store:profile' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit"></i> Update Profile
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% if user.profile.is_seller and shops %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-store"></i> My Shops</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for shop in shops %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100">
+                            {% if shop.logo %}
+                                <img src="{{ shop.logo.url }}" class="card-img-top" alt="{{ shop.name }}" style="height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                    <i class="fas fa-store fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ shop.name }}</h6>
+                                <p class="card-text small">{{ shop.description|truncatewords:10 }}</p>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'store:shop_detail' shop.pk %}" class="btn btn-primary btn-sm">View Shop</a>
+                                    <a href="{% url 'store:manage_shop' shop.pk %}" class="btn btn-outline-primary btn-sm">Manage</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% if orders %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shopping-bag"></i> Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.order_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'shipped' %}info{% elif order.status == 'confirmed' %}warning{% else %}secondary{% endif %}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                                <td>${{ order.total_amount|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'store:order_detail' order.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'store:order_list' %}" class="btn btn-primary">View All Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% if favorites %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-heart"></i> Favorite Products</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for favorite in favorites %}
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card h-100">
+                            {% if favorite.product.image %}
+                                <img src="{{ favorite.product.image.url }}" class="card-img-top" alt="{{ favorite.product.name }}" style="height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                    <i class="fas fa-box fa-2x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ favorite.product.name }}</h6>
+                                <p class="card-text text-muted small">{{ favorite.product.category.name }}</p>
+                                <a href="{% url 'store:product_detail' favorite.product.pk %}" class="btn btn-primary btn-sm">View Product</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'store:favorites' %}" class="btn btn-primary">View All Favorites</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'store:product_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search"></i> Browse Products
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'store:cart' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-shopping-cart"></i> View Cart
+                        </a>
+                    </div>
+                    {% if user.profile.is_seller %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'store:add_goods' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-plus"></i> Add Goods to Shop
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'store:add_goods' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-box"></i> Add Goods
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

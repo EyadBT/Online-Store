@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if goods %}Edit Goods{% else %}Add Goods{% endif %} - Smart Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-boxes"></i> {% if goods %}Edit Goods{% else %}Add Goods to Shop{% endif %}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.shop.id_for_label }}" class="form-label">Shop *</label>
+                        {{ form.shop }}
+                        {% if form.shop.errors %}
+                            <div class="text-danger">
+                                {% for error in form.shop.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.product.id_for_label }}" class="form-label">Product *</label>
+                        {{ form.product }}
+                        {% if form.product.errors %}
+                            <div class="text-danger">
+                                {% for error in form.product.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.purchase_price.id_for_label }}" class="form-label">Purchase Price *</label>
+                                {{ form.purchase_price }}
+                                {% if form.purchase_price.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.purchase_price.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.selling_price.id_for_label }}" class="form-label">Selling Price *</label>
+                                {{ form.selling_price }}
+                                {% if form.selling_price.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.selling_price.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.stock.id_for_label }}" class="form-label">Stock Quantity *</label>
+                        {{ form.stock }}
+                        {% if form.stock.errors %}
+                            <div class="text-danger">
+                                {% for error in form.stock.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_available }}
+                            <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                                Available for purchase
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        {% if goods %}
+                            <a href="{% url 'store:manage_shop' goods.shop.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Shop
+                            </a>
+                        {% else %}
+                            <a href="{% url 'store:dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {% if goods %}Update Goods{% else %}Add Goods{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

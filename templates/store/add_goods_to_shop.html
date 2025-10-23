@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Goods to Shop{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Add Goods to Your Shop</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        
+                        <div class="mb-4">
+                            <div class="form-group">
+                                <label for="{{ form.shop.id_for_label }}" class="form-label">Select Shop:</label>
+                                {{ form.shop }}
+                                {% if form.shop.errors %}
+                                    <div class="text-danger">{{ form.shop.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Choose how to add products:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="product_action" id="existing" value="existing" checked>
+                                <label class="form-check-label" for="existing">
+                                    Select an existing product from the database
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="product_action" id="new" value="new">
+                                <label class="form-check-label" for="new">
+                                    Create a new product
+                                </label>
+                            </div>
+                        </div>
+
+                        
+                        <div id="existing-product-section" class="mb-4">
+                            <div class="form-group">
+                                <label for="{{ form.existing_product.id_for_label }}" class="form-label">Select Product:</label>
+                                {{ form.existing_product }}
+                                {% if form.existing_product.errors %}
+                                    <div class="text-danger">{{ form.existing_product.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        
+                        <div id="new-product-section" class="mb-4" style="display: none;">
+                            <h5 class="mb-3">Product Information</h5>
+                            
+                            <div class="form-group mb-3">
+                                <label for="{{ form.product_name.id_for_label }}" class="form-label">Product Name:</label>
+                                {{ form.product_name }}
+                                {% if form.product_name.errors %}
+                                    <div class="text-danger">{{ form.product_name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="{{ form.product_category.id_for_label }}" class="form-label">Category:</label>
+                                {{ form.product_category }}
+                                {% if form.product_category.errors %}
+                                    <div class="text-danger">{{ form.product_category.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="{{ form.product_description.id_for_label }}" class="form-label">Description:</label>
+                                {{ form.product_description }}
+                                {% if form.product_description.errors %}
+                                    <div class="text-danger">{{ form.product_description.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="{{ form.product_image.id_for_label }}" class="form-label">Product Image:</label>
+                                {{ form.product_image }}
+                                {% if form.product_image.errors %}
+                                    <div class="text-danger">{{ form.product_image.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">Goods Information</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.purchase_price.id_for_label }}" class="form-label">Purchase Price:</label>
+                                        {{ form.purchase_price }}
+                                        {% if form.purchase_price.errors %}
+                                            <div class="text-danger">{{ form.purchase_price.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.selling_price.id_for_label }}" class="form-label">Selling Price:</label>
+                                        {{ form.selling_price }}
+                                        {% if form.selling_price.errors %}
+                                            <div class="text-danger">{{ form.selling_price.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.stock.id_for_label }}" class="form-label">Stock Quantity:</label>
+                                        {{ form.stock }}
+                                        {% if form.stock.errors %}
+                                            <div class="text-danger">{{ form.stock.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <div class="form-check mt-4">
+                                            {{ form.is_available }}
+                                            <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                                                Available for Sale
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'store:manage_shop' pk=shops.first.pk %}" class="btn btn-secondary" id="cancel-btn">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Add Goods to Shop</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const existingRadio = document.getElementById('existing');
+    const newRadio = document.getElementById('new');
+    const existingSection = document.getElementById('existing-product-section');
+    const newSection = document.getElementById('new-product-section');
+    const shopSelect = document.getElementById('{{ form.shop.id_for_label }}');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    function toggleSections() {
+        if (existingRadio.checked) {
+            existingSection.style.display = 'block';
+            newSection.style.display = 'none';
+        } else {
+            existingSection.style.display = 'none';
+            newSection.style.display = 'block';
+        }
+    }
+
+    function updateCancelButton() {
+        const selectedShopId = shopSelect.value;
+        if (selectedShopId) {
+            cancelBtn.href = `/shop/${selectedShopId}/manage/`;
+        }
+    }
+
+    existingRadio.addEventListener('change', toggleSections);
+    newRadio.addEventListener('change', toggleSections);
+    shopSelect.addEventListener('change', updateCancelButton);
+    
+    // Initialize cancel button URL
+    updateCancelButton();
+});
+</script>
+{% endblock %}

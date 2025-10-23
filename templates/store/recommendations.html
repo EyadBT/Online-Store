@@ -1,0 +1,769 @@
+{% extends "base.html" %}
+
+{% block title %}My Recommendations{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Personalized Recommendations</h2>
+
+    
+
+    <div class="row">
+        
+        <div class="col-md-6">
+            <h5><i class="fas fa-tags"></i> Same Category</h5>
+            <div class="row">
+                {% for item in same_category_recommendations %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.product_name }}" style="height:150px; object-fit:cover;">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:150px;">
+                                <i class="fas fa-box fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h6>{{ item.product_name }}</h6>
+                            <p class="text-muted small">{{ item.category_name }}</p>
+                            {% if item.description %}
+                                <p class="small">{{ item.description|truncatewords:12 }}</p>
+                            {% endif %}
+                            {% if item.price %}
+                                <p><strong>${{ item.price }}</strong></p>
+                            {% endif %}
+                            <a href="{% url 'store:product_detail' item.product_id %}" class="btn btn-sm btn-primary w-100">View</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No recommendations found.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        
+        <div class="col-md-6">
+            <h5><i class="fas fa-lightbulb"></i> New Category</h5>
+            <div class="row">
+                {% for item in new_category_recommendations %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.product_name }}" style="height:150px; object-fit:cover;">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:150px;">
+                                <i class="fas fa-box fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h6>{{ item.product_name }}</h6>
+                            <p class="text-muted small">{{ item.category_name }}</p>
+                            {% if item.description %}
+                                <p class="small">{{ item.description|truncatewords:12 }}</p>
+                            {% endif %}
+                            {% if item.price %}
+                                <p><strong>${{ item.price }}</strong></p>
+                            {% endif %}
+                            <a href="{% url 'store:product_detail' item.product_id %}" class="btn btn-sm btn-primary w-100">View</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No recommendations found.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if cluster_info %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-chart-bar"></i> Cluster Statistics
+        </div>
+        <div class="card-body">
+            <p><strong>Total Clusters:</strong> {{ cluster_info.total_clusters }}</p>
+            <p><strong>Your Cluster:</strong>
+                {% if cluster_info.user_cluster != None %}
+                    {{ cluster_info.user_cluster }}
+                {% else %}
+                    <span class="text-muted">N/A</span>
+                {% endif %}
+            </p>
+
+            <h6>Users per Cluster:</h6>
+            <ul class="list-group">
+                {% for cid, count in cluster_info.cluster_sizes.items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Cluster {{ cid }}
+                    <span class="badge bg-primary rounded-pill">{{ count }} users</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+{% comment %} {% extends "base.html" %}
+
+
+{% block content %}
+
+    <h1>التوصيات</h1>
+
+    <hr>
+    <h2>منتجات من نفس التصنيف</h2>
+    {% if same_category_recommendations %}
+    <ul>
+        {% for pid, pname, cname in same_category_recommendations %}
+        <li>
+            <a href="{% url 'store:product_detail' pid %}">
+            {{ pname }} (تصنيف: {{ cname }})
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>⚠️ لم يتم العثور على توصيات من نفس التصنيف.</p>
+    {% endif %}
+
+    <hr>
+    <h2>منتجات من تصنيفات جديدة</h2>
+    {% if new_category_recommendations %}
+    <ul>
+        {% for pid, pname, cname in new_category_recommendations %}
+        <li>
+            <a href="{% url 'store:product_detail' pid %}">
+            {{ pname }} (تصنيف: {{ cname }})
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>⚠️ لم يتم العثور على توصيات من تصنيفات جديدة.</p>
+    {% endif %}
+
+    <hr>
+    <h2>معلومات التصنيفات (Clusters)</h2>
+    <p>عدد التصنيفات الكلي: {{ cluster_info.total_clusters }}</p>
+
+    {% if cluster_info.user_cluster %}
+    <p>التصنيف الذي تنتمي إليه: {{ cluster_info.user_cluster }}</p>
+    {% else %}
+    <p>⚠️ لم يتم تحديد التصنيف الخاص بك بعد.</p>
+    {% endif %}
+
+    <h3>عدد المستخدمين في كل تصنيف:</h3>
+    <ul>
+    {% for cid, size in cluster_info.cluster_sizes.items %}
+        <li>تصنيف {{ cid }}: {{ size }} مستخدم</li>
+    {% endfor %}
+    </ul>
+
+{% endblock %} {% endcomment %}
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}توصيات المنتجات - Smart Store{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-lightbulb text-success"></i>
+                توصيات مخصصة لك
+            </h1>
+
+            
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags"></i>
+                        منتجات مشابهة لما اشتريته
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if same %}
+                        <div class="row">
+                            {% for pid, name, cat in same %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a href="{% url 'store:product_detail' pid %}">
+                                                    {{ name }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-muted mb-0">
+                                                التصنيف: {{ cat }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">لا يوجد توصيات من نفس التصنيف حالياً.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-random"></i>
+                        منتجات من تصنيفات جديدة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if related %}
+                        <div class="row">
+                            {% for pid, name, cat in related %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a href="{% url 'store:product_detail' pid %}">
+                                                    {{ name }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-muted mb-0">
+                                                التصنيف: {{ cat }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">لا يوجد توصيات من تصنيفات جديدة حالياً.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            
+            {% comment %} <div class="mt-3">
+                <a href="{% url 'store:home' %}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> العودة للرئيسية
+                </a>
+                <a href="{% url 'store:clustering_info' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-pie"></i> عرض معلومات الكلستر
+                </a>
+            </div> {% endcomment %}
+        {% comment %} </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}
+
+
+
+{% comment %} {% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Recommendations</h1>
+
+    
+    <div class="card mb-3">
+        <div class="card-header">
+            Shared Category Recommendation
+        </div>
+        <div class="card-body">
+            {% if shared %}
+                {% for product in shared|slice:":3" %}
+                    <h5>{{ product.product_name }}</h5>
+                    <p><strong>Category:</strong> {{ product.category_name }}</p>
+                    <p><strong>Description:</strong> {{ product.description }}</p>
+                    <p><strong>Price:</strong> ${{ product.selling_price }}</p>
+                    <p><strong>Available from:</strong> {{ product.shop_name }}</p>  
+                    {% if product.image %}
+                        <img src="{{ product.image }}" alt="{{ product.product_name }}" style="max-width:300px; max-height:300px;">
+                    {% endif %}
+                    <a href="{% url 'store:product_detail' product.product_id %}" class="btn btn-primary mt-3">View Product</a>
+                    <hr>
+                {% endfor %}
+            {% else %}
+                <p>No recommendation found in the same category.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    
+    <div class="card mb-3">
+        <div class="card-header">
+            New Category Recommendation
+        </div>
+        <div class="card-body">
+            {% if new_cat %}
+                {% for product in new_cat|slice:":3" %}
+                    <h5>{{ product.product_name }}</h5>
+                    <p><strong>Category:</strong> {{ product.category_name }}</p>
+                    <p><strong>Description:</strong> {{ product.description }}</p>
+                    <p><strong>Price:</strong> ${{ product.selling_price }}</p>
+                    <p><strong>Available from:</strong> {{ product.shop_name }}</p>  
+                    {% if product.image %}
+                        <img src="{{ product.image }}" alt="{{ product.product_name }}" style="max-width:300px; max-height:300px;">
+                    {% endif %}
+                    <a href="{% url 'store:product_detail' product.product_id %}" class="btn btn-primary mt-3">View Product</a>
+                    <hr>
+                {% endfor %}
+            {% else %}
+                <p>No recommendation found in a new category.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Personalized Recommendations - Smart Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recommendation-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e9ecef;
+    }
+    
+    .recommendation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .category-badge {
+        background: linear-gradient(45deg, #007bff, #6610f2);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .cluster-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        border-left: 4px solid #007bff;
+        padding-left: 1rem;
+        margin: 2rem 0 1rem 0;
+        color: #333;
+    }
+    
+    .trending-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .loading-content {
+        text-align: center;
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        width: 300px;
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(45deg, #007bff, #6610f2);
+        width: 0%;
+        transition: width 0.3s ease;
+        animation: progress-animation 2s ease-in-out infinite;
+    }
+    
+    @keyframes progress-animation {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-spinner" style="width: 40px; height: 40px; border-width: 4px; margin: 0 auto 1rem;"></div>
+        <h4>Generating Your Recommendations</h4>
+        <p class="text-muted">Our AI is analyzing your shopping patterns...</p>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <small class="text-muted">This may take a few seconds on first visit</small>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-lightbulb text-warning"></i>
+                Your Personalized Recommendations
+            </h1>
+            
+            
+            {% if cluster_info %}
+            <div class="cluster-info">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-2">
+                            <i class="fas fa-users"></i>
+                            You're in Cluster #{{ cluster_info.cluster_id }}
+                        </h4>
+                        <p class="mb-1">You're grouped with {{ cluster_info.cluster_size }} other users who have similar shopping patterns.</p>
+                        <small class="opacity-75">This helps us find products that users like you enjoy.</small>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-flex align-items-center justify-content-md-end">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span>AI-Powered</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            
+            <h3 class="section-header">
+                <i class="fas fa-tags text-primary"></i>
+                Recommended from Your Favorite Categories
+            </h3>
+            
+            {% if recommendations.same_category %}
+            <div class="row">
+                {% for product_id, product_name, category_name in recommendations.same_category %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card recommendation-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ product_name }}</h6>
+                            <span class="category-badge">{{ category_name }}</span>
+                            <p class="card-text mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Based on your interest in {{ category_name }}
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'store:product_detail' product_id %}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Product
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h5>No category-based recommendations yet</h5>
+                <p>Start shopping to get personalized recommendations based on your interests!</p>
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Browse Products
+                </a>
+            </div>
+            {% endif %}
+            
+            
+            <h3 class="section-header">
+                <i class="fas fa-link text-success"></i>
+                Discover New Categories
+            </h3>
+            
+            {% if recommendations.related_category %}
+            <div class="row">
+                {% for product_id, product_name, category_name in recommendations.related_category %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card recommendation-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ product_name }}</h6>
+                            <span class="category-badge">{{ category_name }}</span>
+                            <p class="card-text mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-lightbulb"></i>
+                                    Related to categories you like
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'store:product_detail' product_id %}" class="btn btn-success btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Product
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-compass"></i>
+                <h5>No cross-category recommendations yet</h5>
+                <p>Explore more products to discover new categories that might interest you!</p>
+            </div>
+            {% endif %}
+            
+            
+            {% if ai_recommendations %}
+            <h3 class="section-header">
+                <i class="fas fa-robot text-info"></i>
+                AI-Powered Suggestions
+            </h3>
+            
+            <div class="row">
+                {% for rec in ai_recommendations %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card recommendation-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ rec.product_name|default:"Product" }}</h6>
+                            {% if rec.category %}
+                            <span class="category-badge">{{ rec.category }}</span>
+                            {% endif %}
+                            <p class="card-text mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-robot"></i>
+                                    AI analysis based on your behavior
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'store:product_detail' rec.product_id %}" class="btn btn-info btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Product
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            
+            {% if bundle_recommendations %}
+            <h3 class="section-header">
+                <i class="fas fa-gift text-warning"></i>
+                Smart Bundle Offers
+            </h3>
+            
+            <div class="row">
+                {% for rec in bundle_recommendations %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card recommendation-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ rec.product_name|default:"Bundle" }}</h6>
+                            {% if rec.category %}
+                            <span class="category-badge">{{ rec.category }}</span>
+                            {% endif %}
+                            <p class="card-text mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-gift"></i>
+                                    Special bundle offer for you
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'store:product_detail' rec.product_id %}" class="btn btn-warning btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Bundle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            
+            {% if trending_products %}
+            <h3 class="section-header">
+                <i class="fas fa-fire text-danger"></i>
+                Trending Now
+            </h3>
+            
+            <div class="row">
+                {% for item in trending_products %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card recommendation-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ item.product.name }}</h6>
+                            <span class="trending-badge">
+                                <i class="fas fa-fire"></i>
+                                Popular
+                            </span>
+                            <p class="card-text mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-chart-line"></i>
+                                    {{ item.popularity }} people bought this recently
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'store:product_detail' item.product.id %}" class="btn btn-danger btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Product
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            
+            {% if user_categories %}
+            <div class="mt-5">
+                <h4 class="section-header">
+                    <i class="fas fa-chart-pie text-secondary"></i>
+                    Your Shopping Profile
+                </h4>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Categories You Shop From:</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for category in user_categories %}
+                                    <span class="badge bg-secondary">{{ category }}</span>
+                                    {% endfor %}
+                                </div>
+                                <p class="mt-2 mb-0">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        We use this information to provide better recommendations
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            
+            <div class="text-center mt-4 mb-5">
+                <a href="{% url 'store:recommendations' %}" class="btn btn-outline-primary" onclick="showLoading()">
+                    <i class="fas fa-sync-alt"></i> Refresh Recommendations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show loading overlay when page loads or refresh is clicked
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        // Hide loading overlay after a short delay to show the loading animation
+        setTimeout(function() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 1000);
+    });
+    
+    // Show loading when refresh button is clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add some interactivity
+        const cards = document.querySelectorAll('.recommendation-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+        
+        // Show loading briefly on page load
+        showLoading();
+        setTimeout(function() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 1500);
+    });
+</script>
+{% endblock %} {% endcomment %}
+
+

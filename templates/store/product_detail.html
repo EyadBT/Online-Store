@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Smart Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+                <i class="fas fa-box fa-5x text-muted"></i>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <p class="text-muted">{{ product.category.name }}</p>
+        
+        {% if product.description %}
+            <p>{{ product.description }}</p>
+        {% endif %}
+        
+        {% if goods_list %}
+            <h5>Available from:</h5>
+            {% for goods in goods_list %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h6>{{ goods.shop.name }}</h6>
+                        <p class="mb-1">Price: ${{ goods.selling_price|floatformat:2 }}</p>
+                        <p class="mb-2">Stock: {{ goods.stock }} units</p>
+                        <form method="post" action="{% url 'store:add_to_cart' goods.pk %}" class="d-flex align-items-center">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="1" min="1" max="{{ goods.stock }}" class="form-control form-control-sm me-2" style="width: 80px;">
+                            <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> This product is currently not available from any shops.
+            </div>
+        {% endif %}
+        
+        {% if user.is_authenticated %}
+            <div class="mt-3">
+                <a href="{% url 'store:toggle_favorite' product.pk %}" class="btn btn-outline-danger">
+                    <i class="fas fa-heart"></i> 
+                    {% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+{% if reviews %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h4>Reviews</h4>
+        {% for review in reviews %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h6>{{ review.user.username }}</h6>
+                        <div>
+                            {% for i in "12345" %}
+                                <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if review.comment %}
+                        <p class="mb-1">{{ review.comment }}</p>
+                    {% endif %}
+                    <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{% if related_products %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h4>Related Products</h4>
+        <div class="row">
+            {% for related_product in related_products %}
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    {% if related_product.image %}
+                        <img src="{{ related_product.image.url }}" class="card-img-top" alt="{{ related_product.name }}" style="height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                            <i class="fas fa-box fa-2x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ related_product.name }}</h6>
+                        <p class="card-text text-muted small">{{ related_product.category.name }}</p>
+                        <a href="{% url 'store:product_detail' related_product.pk %}" class="btn btn-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% if fp_recommendations %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-project-diagram"></i> Customers Also Bought (FP-Growth)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for rec in fp_recommendations %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-info">
+                            {% if rec.product.image %}
+                                <img src="{{ rec.product.image.url }}" class="card-img-top" alt="{{ rec.product.name }}" style="height: 120px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
+                                    <i class="fas fa-box fa-2x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ rec.product.name }}</h6>
+                                <p class="card-text text-muted small">
+                                    <i class="fas fa-percentage"></i> Confidence: {{ rec.probability|floatformat:2 }}
+                                </p>
+                                <a href="{% url 'store:product_detail' rec.product.pk %}" class="btn btn-outline-info btn-sm">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% if fp_bundle_offers %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-lg border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-boxes"></i> Smart Bundle Offers (FP-Growth)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for bundle in fp_bundle_offers %}
+                <div class="bundle-offer mb-4 p-3 border rounded bg-light">
+                    <div class="row align-items-center">
+                        
+                        <div class="col-md-8 d-flex flex-wrap">
+                            {% for product_info in bundle.products %}
+                            <div class="d-flex align-items-center me-3 mb-2 p-2 bg-white rounded shadow-sm" 
+                                 style="min-width: 180px;">
+                                {% if product_info.product.image %}
+                                    <img src="{{ product_info.product.image.url }}" alt="{{ product_info.product.name }}"
+                                         class="me-2 rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <div class="me-2 bg-secondary d-flex align-items-center justify-content-center rounded"
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-box text-white"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ product_info.product.name }}</strong><br>
+                                    <small class="text-muted">${{ product_info.price|floatformat:2 }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        
+                        <div class="col-md-4 text-center">
+                            <div class="bg-warning bg-opacity-10 p-3 rounded mb-2">
+                                <div>
+                                    <small class="text-muted">Original Total</small><br>
+                                    <span class="text-decoration-line-through text-muted">
+                                        ${{ bundle.total_original_price|floatformat:2 }}
+                                    </span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success fw-bold">Bundle Price</small><br>
+                                    <span class="h5 text-success mb-0">
+                                        ${{ bundle.bundle_price|floatformat:2 }}
+                                    </span>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <span class="badge bg-danger fs-6">
+                                        Save {{ bundle.discount_percentage }}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <form method="post" action="{% url 'store:add_bundle_to_cart' %}">
+                                {% csrf_token %}
+                                {% for item in bundle.products %}
+                                    <input type="hidden" name="product_ids" value="{{ item.product.id }}">
+                                {% endfor %}
+                                <input type="hidden" name="bundle_id" value="{{ bundle.bundle_id }}">
+                                <input type="hidden" name="discount" value="{{ bundle.discount_percentage }}">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-shopping-cart"></i> Add Bundle to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

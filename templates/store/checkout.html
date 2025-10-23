@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - Smart Store{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-credit-card"></i> Checkout</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.shipping_address.id_for_label }}" class="form-label">{{ form.shipping_address.label }}</label>
+                        {{ form.shipping_address }}
+                        {% if form.shipping_address.errors %}
+                            <div class="text-danger">
+                                {% for error in form.shipping_address.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger">
+                                {% for error in form.notes.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.payment_method.label }}</label>
+                        <div class="mt-2">
+                            {% for choice in form.payment_method %}
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.payment_method.errors %}
+                            <div class="text-danger">
+                                {% for error in form.payment_method.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Place Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shopping-cart"></i> Order Summary</h5>
+            </div>
+            <div class="card-body">
+                {% for item in cart %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <h6 class="mb-0">{{ item.goods.product.name }}</h6>
+                            <small class="text-muted">{{ item.goods.shop.name }} x {{ item.quantity }}</small>
+                        </div>
+                        <span>${{ item.total_price|floatformat:2 }}</span>
+                    </div>
+                {% endfor %}
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <h5>Total</h5>
+                    <h5 class="text-primary">${{ cart.get_total_price|floatformat:2 }}</h5>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        Your order will be processed once payment is confirmed.
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-wallet"></i> Wallet Balance</h6>
+            </div>
+            <div class="card-body">
+                <h4 class="text-primary">${{ user.wallet.balance|floatformat:2 }}</h4>
+                <small class="text-muted">Available for payment</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Pricing Recommendation - {{ goods.product.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-robot"></i> AI Pricing Recommendation</h2>
+            <a href="{% url 'store:manage_shop' goods.shop.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Shop Management
+            </a>
+        </div>
+
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-box"></i> Product Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {% if goods.product.image %}
+                            <img src="{{ goods.product.image.url }}" alt="{{ goods.product.name }}" class="img-fluid rounded">
+                        {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 150px;">
+                                <i class="fas fa-box fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h4>{{ goods.product.name }}</h4>
+                        <p class="text-muted">{{ goods.product.category.name }}</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Current Price:</strong> ${{ goods.selling_price|floatformat:2 }}</p>
+                                <p><strong>Purchase Price:</strong> ${{ goods.purchase_price|floatformat:2 }}</p>
+                                <p><strong>Current Stock:</strong> {{ goods.stock }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Profit Margin:</strong> 
+                                    {% widthratio goods.selling_price|add:"-"|add:goods.purchase_price goods.selling_price 100 %}%
+                                </p>
+                                <p><strong>Shop:</strong> {{ goods.shop.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb"></i> AI Recommendation</h5>
+            </div>
+            <div class="card-body">
+                {% if recommendation %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-chart-line"></i> Recommendation: {{ recommendation.action|title }}</h6>
+                                {% if recommendation.action in 'increase,decrease' %}
+                                    {% widthratio recommendation.pct 1 100 as pct100 %}
+                                    <p><strong>Suggested Price Change:</strong> 
+                                        {% if recommendation.pct > 0 %}
+                                            <span class="text-success">+{{ pct100|floatformat:1 }}%</span>
+                                        {% else %}
+                                            <span class="text-danger">{{ pct100|floatformat:1 }}%</span>
+                                        {% endif %}
+                                    </p>
+                                    {% if recommendation.suggested_price %}
+                                        <p><strong>New Suggested Price:</strong> 
+                                            <span class="text-primary">${{ recommendation.suggested_price|floatformat:2 }}</span>
+                                        </p>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <div class="mt-3">
+                                    <h6>Reasons:</h6>
+                                    <ul class="mb-0">
+                                        {% for reason in recommendation.reasons %}
+                                            <li>{{ reason }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-cogs"></i> Analysis Factors</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if recommendation.facts %}
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small><strong>Sales:</strong></small><br>
+                                                <span class="badge bg-{% if recommendation.facts.sales == 'high' or recommendation.facts.sales == 'very_high' %}success{% elif recommendation.facts.sales == 'medium' %}warning{% else %}danger{% endif %}">
+                                                    {{ recommendation.facts.sales|title }}
+                                                </span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>Stock:</strong></small><br>
+                                                <span class="badge bg-{% if recommendation.facts.stock == 'low' %}danger{% elif recommendation.facts.stock == 'medium' %}warning{% else %}success{% endif %}">
+                                                    {{ recommendation.facts.stock|title }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-6">
+                                                <small><strong>Competition:</strong></small><br>
+                                                <span class="badge bg-{% if recommendation.facts.competition == 'cheaper' %}danger{% elif recommendation.facts.competition == 'pricier' %}success{% else %}info{% endif %}">
+                                                    {{ recommendation.facts.competition|title }}
+                                                </span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>Rating:</strong></small><br>
+                                                <span class="badge bg-{% if recommendation.facts.rating == 'excellent' %}success{% elif recommendation.facts.rating == 'good' %}info{% elif recommendation.facts.rating == 'average' %}warning{% else %}danger{% endif %}">
+                                                    {{ recommendation.facts.rating|title }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-6">
+                                                <small><strong>Trend:</strong></small><br>
+                                                <span class="badge bg-{% if recommendation.facts.trend == 'rising' %}success{% elif recommendation.facts.trend == 'falling' %}danger{% else %}secondary{% endif %}">
+                                                    {{ recommendation.facts.trend|title }}
+                                                </span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small><strong>Margin:</strong></small><br>
+                                                <span class="badge bg-{% if recommendation.facts.margin == 'very_high' %}success{% elif recommendation.facts.margin == 'good' %}info{% else %}warning{% endif %}">
+                                                    {{ recommendation.facts.margin|title }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="mt-4 text-center">
+                        {% if recommendation.action in 'increase,decrease' and recommendation.suggested_price %}
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" name="action" value="apply" class="btn btn-success btn-lg me-3">
+                                    <i class="fas fa-check"></i> Apply Price Change
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        <a href="{% url 'store:manage_shop' goods.shop.pk %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Keep Current Price
+                        </a>
+                    </div>
+
+                    
+                    <div class="mt-4">
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-info-circle"></i> How the AI Works</h6>
+                            <p class="mb-2">This AI system analyzes multiple factors including:</p>
+                            <ul class="mb-0">
+                                <li><strong>Sales Performance:</strong> Recent sales velocity and trends</li>
+                                <li><strong>Market Position:</strong> Your price compared to competitors</li>
+                                <li><strong>Inventory Status:</strong> Stock levels and turnover</li>
+                                <li><strong>Product Metrics:</strong> Ratings, favorites, and age</li>
+                                <li><strong>Seasonal Factors:</strong> Current market demand patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> No recommendation available at this time.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

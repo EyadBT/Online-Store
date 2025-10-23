@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sales Analytics - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'store:manage_shop' shop.pk %}">Manage {{ shop.name }}</a></li>
+                    <li class="breadcrumb-item active">Sales Analytics</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-chart-line"></i> Sales Analytics - {{ shop.name }}</h2>
+                <a href="{% url 'store:manage_shop' shop.pk %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Shop Management
+                </a>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Time Period Filter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="?time_filter=all" class="btn btn-{% if time_filter == 'all' %}primary{% else %}outline-primary{% endif %}">
+                            All Time
+                        </a>
+                        <a href="?time_filter=hour" class="btn btn-{% if time_filter == 'hour' %}primary{% else %}outline-primary{% endif %}">
+                            Last Hour
+                        </a>
+                        <a href="?time_filter=day" class="btn btn-{% if time_filter == 'day' %}primary{% else %}outline-primary{% endif %}">
+                            Last 24 Hours
+                        </a>
+                        <a href="?time_filter=week" class="btn btn-{% if time_filter == 'week' %}primary{% else %}outline-primary{% endif %}">
+                            Last Week
+                        </a>
+                        <a href="?time_filter=month" class="btn btn-{% if time_filter == 'month' %}primary{% else %}outline-primary{% endif %}">
+                            Last Month
+                        </a>
+                        <a href="?time_filter=year" class="btn btn-{% if time_filter == 'year' %}primary{% else %}outline-primary{% endif %}">
+                            Last Year
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x mb-3"></i>
+                    <h4>${{ total_revenue|floatformat:2 }}</h4>
+                    <p class="mb-0">Total Revenue</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                    <h4>${{ total_profit|floatformat:2 }}</h4>
+                    <p class="mb-0">Total Profit</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                    <h4>{{ sales_count }}</h4>
+                    <p class="mb-0">Total Sales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-percentage fa-3x mb-3"></i>
+                    <h4>{{ profit_margin_percentage|floatformat:1 }}%</h4>
+                    <p class="mb-0">Profit Margin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    {% if top_products %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-trophy"></i> Top Selling Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Total Revenue</th>
+                                    <th>Average Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ product.product__name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ product.total_quantity }}</span>
+                                    </td>
+                                    <td>${{ product.total_revenue|floatformat:2 }}</td>
+                                    <td>${{ product.avg_price|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    
+    {% if recent_sales %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Recent Sales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total Revenue</th>
+                                    <th>Profit</th>
+                                    <th>Order ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td>{{ sale.sale_date|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if sale.product.image %}
+                                                <img src="{{ sale.product.image.url }}" alt="{{ sale.product.name }}" style="width: 30px; height: 30px; object-fit: cover;" class="me-2">
+                                            {% else %}
+                                                <div class="bg-light d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                    <i class="fas fa-box text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <span>{{ sale.product.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ sale.quantity_sold }}</td>
+                                    <td>${{ sale.unit_price|floatformat:2 }}</td>
+                                    <td>${{ sale.total_revenue|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if sale.profit_margin >= 0 %}success{% else %}danger{% endif %}">
+                                            ${{ sale.profit_margin|floatformat:2 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'store:order_detail' sale.order_detail.order.pk %}" class="btn btn-sm btn-outline-primary">
+                                            #{{ sale.order_detail.order.pk }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    
+    {% if not sales_records %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                    <h5>No Sales Data Available</h5>
+                    <p class="text-muted">
+                        {% if time_filter == 'all' %}
+                            No sales have been recorded for this shop yet.
+                        {% else %}
+                            No sales found for the selected time period.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'store:manage_shop' shop.pk %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Products to Start Selling
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.btn-group .btn {
+    border-radius: 0;
+}
+.btn-group .btn:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+.btn-group .btn:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+</style>
+{% endblock %}
